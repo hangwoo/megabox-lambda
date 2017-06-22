@@ -1,0 +1,7 @@
+.*.un~
+.DS_store
+*.log
+node_modules/*
+.idea/
+config.js
+
