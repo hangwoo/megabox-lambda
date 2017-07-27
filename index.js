@@ -5,25 +5,23 @@ const mailer = require('./mailer');
 const transporter = mailer.transporter;
 const { user } = require('./config');
 const fs = require('fs');
-let Options = mailer.options;
-let context = null;
+const { options: Options } = mailer;
+const url = 'http://www.megabox.co.kr/pages/store/Store_MenuList.jsp';
 
 log.setLevel('trace', true);
 
-const url = 'http://www.megabox.co.kr/pages/store/Store_MenuList.jsp';
-
 let itemNameArray = [];
 
-const checkMegaChance = (context) => {
+const checkMegaChance = () => {
   let stringData = fs.readFileSync('./items.txt', 'utf8');
   itemNameArray = stringData.split(';');
   request(url, (err, res, body) => {
     if (err) console.log(err);
-    let $ = cheerio.load(body);
-    let megaChanceTab = $('#storeTeb_03');
-    let megaChanceList = megaChanceTab.next().find('li');
+    const $ = cheerio.load(body);
+    const megaChanceTab = $('#storeTeb_03');
+    const megaChanceList = megaChanceTab.next().find('li');
+    const ticketRemains = megaChanceList.find('div').find('.price').find('p').find('b');
     let megaChangeOnePlusItems = megaChanceList.find('div').find('h5');
-    let ticketRemains = megaChanceList.find('div').find('.price').find('p').find('b');
     let newItemNameArray = [];
     let itemArray = [];
 
@@ -50,12 +48,13 @@ const checkMegaChance = (context) => {
       newItemNameArray[i] = itemName;
     });
 
-    console.log('item array', itemArray.map(item => item.name).join(' //  '));
+    console.log('item array', itemArray.map(item => `${item.name}: ${item.remain}`).join(' //  '));
 
     for (let i = 0; i < newItemNameArray.length; i++) {
       if (!(itemNameArray.includes(newItemNameArray[i]))) {
         itemNameArray = newItemNameArray.slice(0);
         fs.writeFileSync('./items.txt', itemNameArray.join(';'));
+        /*
         let option = new Options();
         option.html = makeHtml(itemArray);
         option.to = user.to;
@@ -64,14 +63,10 @@ const checkMegaChance = (context) => {
             console.log(err);
           }
           console.log('send mail');
-          context.done(null);
           return null;
         });
+        */
         break;
-      }
-      else {
-        console.log('not send');
-        context.done(null);
       }
     }
   });
@@ -99,8 +94,4 @@ function makeHtml (itemArray) {
   return html;
 }
 
-exports.handler = (event, context, callback) => {
-  if(context) {
-    checkMegaChance(context);
-  }
-};
+checkMegaChance();
