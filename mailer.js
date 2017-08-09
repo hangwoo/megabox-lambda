@@ -10,12 +10,11 @@ const smtpConfig = {
 
 const transporter = nodemailer.createTransport('SMTP', (smtpConfig));
 
-function options (html, to, cc) {
+function options (html, to) {
   this.from = user.id;
   this.subject = '메가찬스 신작 업데이트!!';
   this.text = '';
   this.html = '';
-  this.cc = user.cc;
   this.makeHtml = (name) => {
     this.html = ``
   }

@@ -13,8 +13,6 @@ log.setLevel('trace', true);
 let itemNameArray = [];
 
 const checkMegaChance = () => {
-  let stringData = fs.readFileSync('./items.txt', 'utf8');
-  itemNameArray = stringData.split(';');
   request(url, (err, res, body) => {
     if (err) console.log(err);
     const $ = cheerio.load(body);
@@ -53,8 +51,6 @@ const checkMegaChance = () => {
     for (let i = 0; i < newItemNameArray.length; i++) {
       if (!(itemNameArray.includes(newItemNameArray[i]))) {
         itemNameArray = newItemNameArray.slice(0);
-        fs.writeFileSync('./items.txt', itemNameArray.join(';'));
-        /*
         let option = new Options();
         option.html = makeHtml(itemArray);
         option.to = user.to;
@@ -65,7 +61,6 @@ const checkMegaChance = () => {
           console.log('send mail');
           return null;
         });
-        */
         break;
       }
     }
@@ -95,3 +90,5 @@ function makeHtml (itemArray) {
 }
 
 checkMegaChance();
+
+setInterval(checkMegaChance, 60 * 30 * 60);
