@@ -11,6 +11,8 @@ const url = 'http://www.megabox.co.kr/pages/store/Store_MenuList.jsp';
 log.setLevel('trace', true);
 
 let itemNameArray = [];
+let time = 0;
+let isFirst = true;
 
 const checkMegaChance = () => {
   request(url, (err, res, body) => {
@@ -28,7 +30,7 @@ const checkMegaChance = () => {
         remain: 0,
         name: '',
       };
-      ticket.remain = Number($(this).text());
+      ticket.remain = $(this).text();
       itemArray.push(ticket);
     });
 
@@ -46,22 +48,27 @@ const checkMegaChance = () => {
       newItemNameArray[i] = itemName;
     });
 
-    console.log('item array', itemArray.map(item => `${item.name}: ${item.remain}`).join(' //  '));
+		console.log('item array:', itemArray.map(item => `${item.name}: ${item.remain}`).join(' //  '));
+		console.log('Date:', new Date());
 
-    for (let i = 0; i < newItemNameArray.length; i++) {
-      if (!(itemNameArray.includes(newItemNameArray[i]))) {
-        itemNameArray = newItemNameArray.slice(0);
-        let option = new Options();
-        option.html = makeHtml(itemArray);
-        option.to = user.to;
-        transporter.sendMail(option, (err) => {
-          if (err) {
-            console.log(err);
-          }
-          console.log('send mail');
-          return null;
-        });
-        break;
+		for (let i = 0; i < newItemNameArray.length; i++) {
+			if (!(itemNameArray.includes(newItemNameArray[i]))) {
+				itemNameArray = newItemNameArray.slice(0);
+				let option = new Options();
+				option.html = makeHtml(itemArray);
+				option.to = user.to;
+				if (!isFirst) {
+					transporter.sendMail(option, (err) => {
+						if (err) {
+							console.log(err);
+						}
+						console.log('send mail');
+						return null;
+					});
+				} else {
+					isFirst = false;
+					}
+				break;
       }
     }
   });
@@ -89,6 +96,12 @@ function makeHtml (itemArray) {
   return html;
 }
 
-checkMegaChance();
+const mm = (new Date()).getMinutes();
+const minute = mm > 30 ? (60 - mm) : (30 - mm);
 
-setInterval(checkMegaChance, 60 * 30 * 60);
+setTimeout(() => {
+	checkMegaChance();
+	setInterval(() => {
+		checkMegaChance();
+	}, 1000 * 60 * 30);
+}, 1000 * 60 * minute);
