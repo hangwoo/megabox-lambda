@@ -98,10 +98,11 @@ function makeHtml (itemArray) {
 
 const mm = (new Date()).getMinutes();
 const minute = mm > 30 ? (60 - mm) : (30 - mm);
+const intervalMinute = 10;
 
 setTimeout(() => {
 	checkMegaChance();
 	setInterval(() => {
 		checkMegaChance();
-	}, 1000 * 60 * 30);
+	}, 1000 * 60 * intervalMinute);
 }, 1000 * 60 * minute);
