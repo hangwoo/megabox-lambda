@@ -4,14 +4,12 @@ const log = require('loglevel');
 const mailer = require('./mailer');
 const transporter = mailer.transporter;
 const { user } = require('./config');
-const fs = require('fs');
 const { options: Options } = mailer;
 const url = 'http://www.megabox.co.kr/pages/store/Store_MenuList.jsp';
 
 log.setLevel('trace', true);
 
 let itemNameArray = [];
-let time = 0;
 let isFirst = true;
 
 const checkMegaChance = () => {
@@ -21,7 +19,7 @@ const checkMegaChance = () => {
     const megaChanceTab = $('#storeTeb_03');
     const megaChanceList = megaChanceTab.next().find('li');
     const ticketRemains = megaChanceList.find('div').find('.price').find('p').find('b');
-    let megaChangeOnePlusItems = megaChanceList.find('div').find('h5');
+    let megaChangeOnePlusItems = megaChanceList.find('div').find('a');
     let newItemNameArray = [];
     let itemArray = [];
 
@@ -34,41 +32,33 @@ const checkMegaChance = () => {
       itemArray.push(ticket);
     });
 
-    megaChangeOnePlusItems.each(function (i, el) {
-      let itemName = '';
-      el.children.forEach((node) => {
-        if (node.type === 'text') {
-          itemName += node.data
-        }
-        else {
-          itemName += node.name;
-        }
-      });
+    megaChangeOnePlusItems.each((i, el) => {
+      const itemName = el.attribs.title.replace("상세보기", "");
       itemArray[i].name = itemName;
       newItemNameArray[i] = itemName;
     });
 
-		console.log('item array:', itemArray.map(item => `${item.name}: ${item.remain}`).join(' //  '));
-		console.log('Date:', new Date());
+    console.log('item array:', itemArray.map(item => `${item.name}: ${item.remain}`).join(' //  '));
+    console.log('Date:', new Date());
 
-		for (let i = 0; i < newItemNameArray.length; i++) {
-			if (!(itemNameArray.includes(newItemNameArray[i]))) {
-				itemNameArray = newItemNameArray.slice(0);
-				let option = new Options();
-				option.html = makeHtml(itemArray);
-				option.to = user.to;
-				if (!isFirst) {
-					transporter.sendMail(option, (err) => {
-						if (err) {
-							console.log(err);
-						}
-						console.log('send mail');
-						return null;
-					});
-				} else {
-					isFirst = false;
-					}
-				break;
+    for (let i = 0; i < newItemNameArray.length; i++) {
+      if (!(itemNameArray.includes(newItemNameArray[i]))) {
+        itemNameArray = newItemNameArray.slice(0);
+        let option = new Options();
+        option.html = makeHtml(itemArray);
+        option.to = user.to;
+        if (!isFirst) {
+          transporter.sendMail(option, (err) => {
+            if (err) {
+              console.log(err);
+            }
+            console.log('send mail');
+            return null;
+          });
+        } else {
+          isFirst = false;
+        }
+        break;
       }
     }
   });
@@ -101,8 +91,8 @@ const minute = mm > 30 ? (60 - mm) : (30 - mm);
 const intervalMinute = 10;
 
 setTimeout(() => {
-	checkMegaChance();
-	setInterval(() => {
-		checkMegaChance();
-	}, 1000 * 60 * intervalMinute);
+  checkMegaChance();
+  setInterval(() => {
+    checkMegaChance();
+  }, 1000 * 60 * intervalMinute);
 }, 1000 * 60 * minute);
