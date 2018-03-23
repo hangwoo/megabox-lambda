@@ -70,7 +70,7 @@ function makeHtml (itemArray) {
   itemArray.forEach((item) => {
     let name = item.name;
     let remain = item.remain;
-    let text = `영화 <strong style="color: #48adf3; font-size: 20px">${name}
+    let text = `영화 <strong style="color: #48adf3; font-size: 20px"><pre>${name}</pre>
             </strong>는 <strong style="color: #48adf3; font-size: 20px">${remain}</strong>
             개 남음`;
     html += makePtag(text);
